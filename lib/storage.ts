@@ -4,11 +4,15 @@ import { v4 as uuidv4 } from 'uuid';
 const STORAGE_KEY = 'ziki-conversations';
 
 export function getConversations(): Conversation[] {
-  if (typeof window === 'undefined') return [];
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data).sort((a: Conversation, b: Conversation) => b.updatedAt - a.updatedAt) : [];
+    if (typeof window === 'undefined') return [];
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.sort((a: Conversation, b: Conversation) => b.updatedAt - a.updatedAt);
   } catch {
+    localStorage.removeItem(STORAGE_KEY);
     return [];
   }
 }

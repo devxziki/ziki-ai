@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Zap } from 'lucide-react';
 import { Conversation } from '@/types/chat';
-import { getConversations, deleteConversation } from '@/lib/storage';
+import { getConversations, createConversation, saveConversation, deleteConversation } from '@/lib/storage';
 import { Button } from '@/components/ui/button';
 
 export function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -15,7 +15,9 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   }, []);
 
   const handleNewChat = () => {
-    router.push('/');
+    const newConv = createConversation();
+    saveConversation(newConv);
+    router.push(`/chat/${newConv.id}`);
     onClose?.();
   };
 
