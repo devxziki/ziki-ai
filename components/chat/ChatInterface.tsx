@@ -54,6 +54,9 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
           )}
         </div>
         <ChatInput onSend={handleSend} disabled={isLoading} />
+        <p style={{ color: '#555', fontSize: '12px', textAlign: 'center', marginTop: '6px', marginBottom: '8px' }}>
+          Chats are temporary and will clear on refresh
+        </p>
       </div>
     </div>
   );
