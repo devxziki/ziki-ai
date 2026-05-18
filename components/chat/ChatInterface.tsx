@@ -1,6 +1,5 @@
 'use client';
-import { useState } from 'react';
-import { Message } from '@/types/chat';
+import { useRef, useEffect, useState } from 'react';
 import { MessageBubble } from './MessageBubble';
 import { ChatInput } from './ChatInput';
 import { Sidebar } from './Sidebar';
@@ -13,13 +12,24 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ conversationId }: ChatInterfaceProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const { messages, append, isLoading } = useChat({
     api: '/api/chat',
+    id: conversationId,
   });
 
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   const handleSend = async (content: string) => {
-    handleInputChange({ target: { value: content } } as any);
-    await handleSubmit({ preventDefault: () => {} } as any);
+    // Use append() directly — bypasses the input state race condition entirely
+    await append({
+      role: 'user',
+      content,
+    });
   };
 
   return (
@@ -34,7 +44,7 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
       <div className="hidden md:block">
         <Sidebar />
       </div>
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <div className="md:hidden p-2 border-b">
           <Menu className="h-6 w-6 cursor-pointer" onClick={() => setSidebarOpen(true)} />
         </div>
@@ -52,6 +62,13 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
               <MessageBubble key={m.id} message={{ id: m.id, role: m.role as 'user' | 'assistant', content: m.content, timestamp: Date.now() }} />
             ))
           )}
+          {isLoading && (
+            <div className="flex items-center gap-2 text-gray-400 text-sm pl-2">
+              <span className="animate-pulse">⚡</span>
+              <span>Ziki is thinking...</span>
+            </div>
+          )}
+          <div ref={bottomRef} />
         </div>
         <ChatInput onSend={handleSend} disabled={isLoading} />
         <p style={{ color: '#555', fontSize: '12px', textAlign: 'center', marginTop: '6px', marginBottom: '8px' }}>
